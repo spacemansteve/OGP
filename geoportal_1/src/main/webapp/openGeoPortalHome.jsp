@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>GeoData@Tufts</title>
+<title>WorldWideGeoWeb</title>
 <%@include file="jspf/includes.jspf"%>
 </head>
 <body>

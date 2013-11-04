@@ -181,21 +181,30 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 			  }
 			  var totalWidth = jQuery('#left_col').width();
 			  var arrColumns = this.getVisibleColumns();
-			  totalWidth = totalWidth - (arrColumns.length * 7) + 1;//account for cell padding plus right borders of cells, leftmost border
+			  fooCols = arrColumns;  //spmcd
+			  //totalWidth = totalWidth - (arrColumns.length * 7) + 1;//account for cell padding plus right borders of cells, leftmost border
+			  totalWidth = totalWidth - (fixedLength(arrColumns) * 7) + 1;//account for cell padding plus right borders of cells, leftmost border
 			  //var divWidth = totalWidth;
 			  var arrSizable = new Array();
 			  var sizableWidth = 0;
 			  var headingsObj = this.tableHeadingsObj;
-			  for (var i in arrColumns){
-				  var currentColumn = arrColumns[i];
+			  for (var i in arrColumns)
+			  {
+			      var currentColumn = arrColumns[i];
+			      if (typeof(currentColumn) != "function")
+			      {
 				  var currentWidth = headingsObj.getWidth(currentColumn);
-				  if (headingsObj.getValue(currentColumn, "resizable")){
-					  sizableWidth += currentWidth;
-					  arrSizable.push(currentColumn);
-				  } else {
+				  if (headingsObj.getValue(currentColumn, "resizable"))
+				  {
+				      sizableWidth += currentWidth;
+				      arrSizable.push(currentColumn);
+				  }
+				  else 
+				      {
 					  var fixedColumnWidth = parseFloat(currentWidth);
 					  totalWidth = totalWidth - fixedColumnWidth;
-				  }
+				      }
+			      }
 			  }
 			  var numberSizable = arrSizable.length;
 			  if (numberSizable == 0){
@@ -228,6 +237,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 				  //set columns to currentWidth values
 				  for (var j in arrSizable){
 					  var currentSizable = arrSizable[j];
+					  if (typeof(currentColumn) != "function"){
 					  //var currentMinWidth = headingsObj.getValue(currentSizable, "minWidth");
 					  var currentWidth = headingsObj.getValue(currentSizable, "currentWidth");
 					  var currentClass = headingsObj.getValue(currentSizable, "sClass");
@@ -235,6 +245,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 					  //since setWidth cannot set a 'currentWidth' smaller than 'minWidth', we
 					  //should be ok not comparing with 'minWidth' here
 					  headingsObj.setWidth(currentSizable, currentWidth);
+					  }
 				  };
 			  } else {
 				  //split the difference between columns and add to each currentWidth, taking care not to go below minWidth
@@ -245,6 +256,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 				  var adjustArr = [];
 				  for (var j in arrSizable){
 					  var currentSizable = arrSizable[j];
+				      if (typeof(currentSizable) != "function"){
 					  var currentMinWidth = headingsObj.getValue(currentSizable, "minWidth");
 					  var currentWidth = headingsObj.getValue(currentSizable, "currentWidth") + widthDifference - propagate;
 					  var currentClass = headingsObj.getValue(currentSizable, "sClass");
@@ -271,6 +283,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 						  headingsObj.setWidth(currentSizable, currentMinWidth);  
 					  }
 				  };
+					  }
 				  while (propagate > 0){
 					  //in this case, we need to start taking width from earlier columns
 					  if (adjustArr.length > 0){
@@ -300,11 +313,27 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  
 	  //html content/formatting for expanded row
 	  this.formatDetails = function(rowNode){
+	      if (true == true)  //spmcd hack
+	      {
+		  var sOut = '<div class="previewControls">';
+		  sOut += "<br/>";
+		  sOut += '</div>';
+		  return sOut;
+	      }
 		var tableID = this.getTableID();
-        var tableObj = this.getTableObj();
+		var tableObj = this.getTableObj();
 	  	var rowData = tableObj.fnGetData(rowNode);
+		quux = rowData;
 	      //layerIDs returned from the search are used as OpenLayers layer names
 	  	var layerID = rowData[this.tableHeadingsObj.getColumnIndex("LayerId")];
+	  	var location = rowData[this.tableHeadingsObj.getColumnIndex("Location")];
+		//spmcd
+		// for crawled data that has no web service, we don't include controls
+		// hack to detect crawled data, this needs review
+		var graphicsSupported = true;
+		//if (layerID.contains("http://") || location.contains("fileDownload"))
+		//      graphicsSupported = false;
+		console.log("layerID = " + layerID + ", " + graphicsSupported);
 	  	var dataType = rowData[this.tableHeadingsObj.getColumnIndex("DataType")];
 	  	var displayName = org.OpenGeoPortal.Utility.escapeQuotes(rowData[this.tableHeadingsObj.getColumnIndex("LayerDisplayName")]);
 	  	var extent = [];
@@ -320,24 +349,29 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 
 	    var opacityVal = org.OpenGeoPortal.layerState.getState(layerID, "opacity") + '%';
 
-	    sOut += '<div class="opacityControlCell">';
-	    sOut += '<div class="opacityControl">opacity: ';
-	    sOut += '<div class="controlText opacityText" id="opacityText' +  tableID + layerID + '">' + opacityVal + '</div>';
-	    sOut += '<img src="' + this.getImage("arrow_down.png") + '" class="controlExpand button" />';
-	    sOut += '</div>';
-	    sOut += '<div class="controlContainer"><div class="opacitySlider" title="Adjust layer transparency" id="opacity' +  tableID + layerID + '">';
-	    sOut += '<img src="' + this.getImage("opacity_bg.png") + '" /></div></div>';
-	    sOut += '</div>';
-	    if ((dataType == "Raster")||(dataType == "Paper Map")||(dataType == "LibraryRecord")){
-	    	sOut += '<div class="sizeControlCell">';
+	    if (graphicsSupported == true)
+	    {
+		sOut += '<div class="opacityControlCell">';
+		sOut += '<div class="opacityControl">opacity: ';
+		sOut += '<div class="controlText opacityText" id="opacityText' +  tableID + layerID + '">' + opacityVal + '</div>';
+		sOut += '<img src="' + this.getImage("arrow_down.png") + '" class="controlExpand button" />';
+		sOut += '</div>';
+		sOut += '<div class="controlContainer"><div class="opacitySlider" title="Adjust layer transparency" id="opacity' +  tableID + layerID + '">';
+		sOut += '<img src="' + this.getImage("opacity_bg.png") + '" /></div></div>';
+		sOut += '</div>';
+		if ((dataType == "Raster")||(dataType == "Paper Map")||(dataType == "LibraryRecord"))
+		{
+		    sOut += '<div class="sizeControlCell">';
 		    sOut += '</div>';
-	    	sOut += '<div class="colorControlCell">';
+		    sOut += '<div class="colorControlCell">';
 		    sOut += '</div>';
 	    	sOut += '<div class="zoomToLayerControlCell"><img src="' + this.getImage("zoomextent.gif") + '" class="button" alt="Zoom to geographic extent of layer" title="Zoom to geographic extent of layer" onclick="org.OpenGeoPortal.map.zoomToLayerExtent(\'' + extent.join() + '\')" /></div>';
 	    	sOut += '<div class="attributeInfoControlCell">';
 		    sOut += '</div>';
-	    } else {
-	    	var attributeToolImg;
+		}
+		else 
+		{
+		    var attributeToolImg;
 		    if (org.OpenGeoPortal.layerState.getState(layerID, "getFeature")){
 		    	attributeToolImg = this.getImage("preview_down.gif");
 		    } else {
@@ -372,8 +406,10 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	    	sOut +=	'<img src="' + attributeToolImg + '" id="attributeInfoControl' + tableID + layerID + '"class="button attributeInfoControl" alt="Show Attributes" title="Click a previewed feature on the map to view its attributes" onclick="org.OpenGeoPortal.ui.toggleFeatureInfo(this, \'' + layerID + '\', \'' + displayName + '\')" /></div>';
 	    }
 
+		//sOut += "<br/><div id='attributeDiv" + layerID + "'>hello, " + layerID +" </div>";  //spmcd
+
 	    sOut += '</div>';
-	    
+	    }
 	    return sOut;
 	  };
 	  
@@ -544,6 +580,8 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		  var tableObj = this.getTableObj();
           var tableID = this.getTableID();
 	      var layerID = tableObj.fnGetData(rowNode)[this.tableHeadingsObj.getColumnIndex("LayerId")];
+	      
+	      //   setDbfDiv("attributeDiv" + layerID);  // spmcd
 		  var escapedLayerID = org.OpenGeoPortal.Utility.idEscape(layerID);
 
 	      tableObj.fnOpen(rowNode, this.formatDetails(rowNode), 'resultsControls'); 
@@ -572,9 +610,10 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     		  }
     	  
     		  //trigger an event?
-    		  if (jQuery(".colorPalette").length == 0){
-    			  setTimeout("org.OpenGeoPortal.ui.setPaletteColor(" + layerID + ")",250);
-    		  }
+		  console.log(" before setPaletteColor: " + layerID);
+		      if (jQuery(".colorPalette").length == 0){
+    			  setTimeout("org.OpenGeoPortal.ui.setPaletteColor('" + layerID + "')",250);
+		      }
     		  org.OpenGeoPortal.ui.setPaletteColor(layerID);
 
     		  var sizeControl = jQuery("div.sizeControl");
@@ -957,6 +996,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  this.previewLayer = function(thisObj){
 		  //debug
 		  //try{
+	        console.log("in previewLayer");
 		  	var tableElement = jQuery(thisObj).closest('tr');
 	        var tableObj = this.getTableObj();	 
 	        var showLayerText = "Preview layer on the map";
@@ -968,7 +1008,26 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	            var aData = tableObj.fnGetData(tableElement[0]);
 	            //our layer id is being used as the openlayers layer name
 	            var layerID = aData[this.tableHeadingsObj.getColumnIndex("LayerId")];
+		    console.log(" layerID = " + layerID);
+		    if (layerID.indexOf("fedora:tufts:") == 0)
+		    {
+			// here with data from our fedora instance
+			var fedoraId = layerID.substr("fedora:".length);
+			console.log(" fedora id = " + fedoraId);
+			var baseFedoraUrl = "http://elections.lib.tufts.edu/catalog/";
+			var fedoraUrl = baseFedoraUrl + fedoraId;
+			console.log(" fedora url = " + fedoraUrl);
+			//fedoraDiv = "<div id='fedoraDiv'></div";
+			//jQuery('body').append(fedoraDiv);
+			// crude solution, chrome loads page in ogp tab, not new tab
+			window.open(fedoraUrl, '_newtab');
+			layerState.setState(layerID, {"preview": "on", "dataType": dataType, "wmsName": layerName});
+			this.addToPreviewedLayers(tableElement);
+			analytics.track("Layer Previewed", institution, layerID);
+			return;
+		    }
       	    	var dataType = aData[this.tableHeadingsObj.getColumnIndex("DataType")];
+		console.log("  dataType = " + dataType + ", " + location);
             	var access = aData[this.tableHeadingsObj.getColumnIndex("Access")];
             	var institution = aData[this.tableHeadingsObj.getColumnIndex("Institution")];
             	var minLatitude = aData[this.tableHeadingsObj.getColumnIndex("MinY")];
@@ -987,6 +1046,22 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
             	} catch (err){
             		 new org.OpenGeoPortal.ErrorObject(err,'Preview parameters are invalid.  Unable to Preview layer "' + aData[this.tableHeadingsObj.getColumnIndex("LayerDisplayName")] +'"');
             	}
+		console.log("dataType = " + dataType + ", location = " + location);
+		locationFoo = location;
+		if ((location != null) && (dataType == "Line" || dataType == "Point" || dataType == "Polygon") && (location["fileDownload"] != null))
+		    {
+			console.log("! shape rendering for  layer data at " + location["fileDownload"]);
+			// try out new parse/render code here
+			// ajax to create cache copy on server and unzip
+			// then load and render
+			loadAndRenderShape(location["fileDownload"]);
+	            	var layerName = aData[this.tableHeadingsObj.getColumnIndex("Name")];
+
+			layerState.setState(layerID, {"preview": "on", "dataType": dataType, "wmsName": layerName});
+			this.addToPreviewedLayers(tableElement);
+			analytics.track("Layer Previewed", institution, layerID);
+			return;
+		    }
             	var georeferenced = aData[this.tableHeadingsObj.getColumnIndex("GeoReferenced")];
 
             	//check for a proxy here
@@ -1058,11 +1133,21 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	        		var aData = tableObj.fnGetData(tableElement[0]);
 	        		var index = this.tableHeadingsObj.getColumnIndex("LayerId");
 	        		var layerID = aData[index];
-	        		//layer id is being used as the openlayers layer name
-	        		org.OpenGeoPortal.map.hideLayer(layerID);
-	        		jQuery(thisObj).attr('title', showLayerText);
-	        		layerState.setState(layerID, {"preview": "off"});
-	       		 	this.previewedLayers.removeLayer(layerID, index);
+				// spmcd, to erase layer
+				var location = jQuery.parseJSON(aData[this.tableHeadingsObj.getColumnIndex("Location")]);
+				if (location.fileDownload != null)
+				{
+				    var url = location.fileDownload;
+				    eraseShape(url)
+				}
+				else
+				{
+				    //layer id is being used as the openlayers layer name
+				    org.OpenGeoPortal.map.hideLayer(layerID);
+				}
+				jQuery(thisObj).attr('title', showLayerText);
+				layerState.setState(layerID, {"preview": "off"});
+				this.previewedLayers.removeLayer(layerID, index);
 	        	} catch (err) {new org.OpenGeoPortal.ErrorObject(err, "Error turning off preview.");};
 
 	        }
@@ -1181,9 +1266,10 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
       	//our layer id is being used as the openlayers layer name
 		  var layerAccess = rowObj.aData[this.tableHeadingsObj.getColumnIndex("Access")];
 		  var layerLocation = rowObj.aData[this.tableHeadingsObj.getColumnIndex("Location")];
-		  if ((layerLocation.indexOf("ArcGISRest") == -1) &&(layerLocation.indexOf("wms") == -1)){
-			  return "";
-		  }
+		  // spmcd hack so we always create a location button to support shapefile rendering
+		  //if ((layerLocation.indexOf("ArcGISRest") == -1) &&(layerLocation.indexOf("wms") == -1)){
+		  //  return "";
+		  //}
 		  if (layerAccess == "Public"){
 			  return this.getActivePreviewControl(rowObj);			  
 		  } else {
@@ -1391,9 +1477,13 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		}
 		var arrColumns = jQuery('#' + visibleTable).dataTable().fnSettings().aoColumns;
 		for (var i in arrColumns){
-			if (arrColumns[i].bVisible == true){
-				arrReturn.push(arrColumns[i].sName);
+		    if (typeof(arrColumns[i]) != "function")
+		    {
+			if (arrColumns[i].bVisible == true)
+			{
+			    arrReturn.push(arrColumns[i].sName);
 			}
+		    }
 		}
 		return arrReturn;
 	  };
@@ -1401,10 +1491,12 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  this.createTooltips = function(){
 		  var arrColumns = this.getVisibleColumns();
 		  for (var i in arrColumns){
+		      if (typeof(arrColumns[i]) != "function"){
 			  var currentHeading = this.tableHeadingsObj.getTableHeadings()[arrColumns[i]];
 			  if (currentHeading.resizable){
 				  this.createSimpleTooltip(currentHeading.columnConfig.sClass);
 			  }
+		      }
 		  }
 		  this.createHeaderTooltips();
 	  };
@@ -1537,7 +1629,8 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     	this.displayedLayers.startIndex = parseInt(startIndex);
     	this.displayedLayers.totalResults = parseInt(totalResults);
     	// solr docs holds an array of hashtables, each hashtable contains a layer
-    	var solrLayers = solrResponse["docs"];
+    	//var solrLayers = solrResponse["docs"];
+	solrLayers = solrResponse["docs"];
     	var arrData = [];
 
     	// loop over all the returned layers
@@ -1602,16 +1695,49 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		for (var layerIndex in previewedItems){
 			dataObj.splice(layerIndex, 0, previewedItems[layerIndex]);
 		}
-		this.getTableObj().fnAddData(dataObj);
+		foo = dataObj;
+	        cleanDataObj = new Array();  //spmcd
+		for (i = 0 ; i < dataObj.length ; i++)
+		    if (typeof(dataObj[i]) != "function")
+			cleanDataObj.push(dataObj[i]);
+		this.getTableObj().fnAddData(cleanDataObj);  
 		this.setTableLength();
 		this.headerSort();
 		this.callbackExpand();
+		// spmcd
+		// some rough code to to set background color based on size in bytes
+		// lets user know what files might be too big to preview
+		rows = jQuery("#searchResults").children()[1].rows;
+		for (i = 0 ; i < cleanDataObj.length ; i++)
+		{
+		    var data = cleanDataObj[i];
+		    var size = data[23];
+		    console.log(i + ", size in bytes = " + size);
+		    var row = rows[i];
+		    if (row)
+		    {
+			var cell = row.cells[4];
+			if (size && cell)
+			{
+			    if (size > 1000000)
+				cell.style.backgroundColor ="#FFA0A0";
+			    else if (size > 500000)
+				cell.style.backgroundColor ="#FFFFCC";
+			    else
+				cell.style.backgroundColor ="#BDFAD8";
+
+			    label = (Math.round(size / 100.) / 10.) + " KBytes";
+			    cell.title = label;
+			}
+		    }
+		}
 	};
 	
 	//*******Search Results only
 	this.searchRequestJsonpSuccess = function(data)
 	{
-		//console.log(data);
+		console.log(data);
+		foo = data;
 		org.OpenGeoPortal.ui.showSearchResults();
 		that.populate(that.processData(data));	
 	    that.tableEffect("searchEnd");
@@ -2298,21 +2424,21 @@ org.OpenGeoPortal.LayerTable.TableHeadings = function(thisObj){
 		    "score": {"ajax": true, "resizable": true, "minWidth": 27, "currentWidth": 27, "organize": true, "displayName": "Relevancy", "columnConfig": 
 		                    {"sName": "score", "sTitle": "Relevancy", "bVisible": false, "aTargets": [ 4 ], "sClass": "colScore", "sWidth": "27px", "bSortable": false }},
 		     "DataType": {"ajax": true, "resizable": false, "organize": "group", "displayName": "Data Type", "columnConfig": 
-		            	{"sName": "DataType", "sTitle": "Type", "bVisible": true, "aTargets": [ 5 ], "sClass": "colType", "sWidth": "24px", "bSortable": false, "bUseRendered": false, 
+		            	{"sName": "DataType", "sTitle": "Type", "bVisible": false, "aTargets": [ 5 ], "sClass": "colType", "sWidth": "24px", "bSortable": false, "bUseRendered": false, 
 		            		"fnRender": function(oObj){return thisObj.getTypeIcon(oObj);}}},
 		     "Name": {"ajax": true, "resizable": false, "organize": false, "columnConfig": 
 		            	{"sName": "Name", "sTitle": "LayerName", "bVisible": false, "aTargets": [ 6 ], "bSortable": false}},
 		     "LayerDisplayName": {"ajax": true, "resizable": true, "minWidth": 28, "currentWidth": 215, "organize": "alpha", "displayName": "Name", "columnConfig": 
 		            	{"sName": "LayerDisplayName", "sTitle": "Name", "bVisible": true, "aTargets": [ 7 ], "sClass": "colTitle", "bSortable": false}}, 
 		     "Originator": {"ajax": true, "resizable": true, "minWidth": 47, "currentWidth": 81, "organize": "group", "displayName": "Originator", "columnConfig": 
-		            	{"sName": "Originator", "sTitle": "Originator", "bVisible": true, "aTargets": [ 8 ], "sClass": "colOriginator", "bSortable": false}},            	
+		            	{"sName": "Originator", "sTitle": "Originator", "bVisible": false, "aTargets": [ 8 ], "sClass": "colOriginator", "bSortable": false}},            	
 		     "Publisher": {"ajax": true, "resizable": true, "minWidth": 47, "currentWidth": 80, "organize": "group", "displayName": "Publisher", "columnConfig": 
 		            	{"sName": "Publisher", "sTitle": "Publisher", "bVisible": false, "aTargets": [ 9 ], "sClass": "colPublisher", "bSortable": false}},
 		     "ContentDate": {"ajax": true, "resizable": false, "organize": "numeric", "displayName": "Date", "columnConfig": 
 		            	{"sName": "ContentDate", "sTitle": "Date", "bVisible": false, "aTargets": [ 10 ], "sClass": "colDate", "sWidth": "25px", "bSortable": false, "bUseRendered": true,
 		            		"fnRender": function(oObj){return oObj.aData[oObj.iDataColumn].substr(0, 4);}}},
 		     "Institution": {"ajax": true, "resizable": false, "organize": "alpha", "displayName": "Repository", "columnConfig": 
-		            	{"sName": "Institution", "sTitle": "Rep", "bVisible": true, "aTargets": [ 11 ], "sClass": "colSource", "sWidth": "19px", "bSortable": false, "bUseRendered": false, 
+		            	{"sName": "Institution", "sTitle": "Rep", "bVisible": false, "aTargets": [ 11 ], "sClass": "colSource", "sWidth": "19px", "bSortable": false, "bUseRendered": false, 
 		            		"fnRender": function(oObj){return thisObj.getSourceIcon(oObj);}}},  
 		     "Metadata": {"ajax": false, "resizable": false, "organize": false, "columnConfig": 
 		                {"sName": "Metadata", "sTitle": "<img src=\"resources/media/icon_meta.png\" alt=\"Metadata\" title=\"show metadata\" />", "bVisible": true, "aTargets": [ 12 ], "sClass": "colMetadata", "sWidth": "17px", "bSortable": false, "bUseRendered": false, 
@@ -2337,7 +2463,9 @@ org.OpenGeoPortal.LayerTable.TableHeadings = function(thisObj){
 		     "GeoReferenced": {"ajax": true, "resizable": false, "organize": false, "columnConfig": 
 		            	{"sName": "GeoReferenced", "sTitle": "Georeferenced", "bVisible": false, "aTargets": [ 21 ], "bSortable": false}},
 		   	 "Availability": {"ajax": true, "resizable": false, "organize": false, "columnConfig": 
-		            	{"sName": "Availability", "sTitle": "Availability", "bVisible": false, "aTargets": [ 22 ], "bSortable": false}}
+					  {"sName": "Availability", "sTitle": "Availability", "bVisible": false, "aTargets": [ 22 ], "bSortable": false}},
+		   	 "SizeInBytes": {"ajax": true, "resizable": false, "organize": false, "columnConfig": 
+		            	{"sName": "SizeInBytes", "sTitle": "SizeInBytes", "bVisible": false, "aTargets": [ 23 ], "bSortable": false}}
 			};
 	//this should be a function, so some params can be set on init
 	//fnRender functions and targets should be generated on init
@@ -2363,6 +2491,10 @@ org.OpenGeoPortal.LayerTable.TableHeadings = function(thisObj){
 	
 	//convenience function for getting the width of a column
 	this.getWidth = function(headingKey){
+	    foohk = headingKey;
+	    bar = headings;
+	    if (headings[headingKey] == undefined)
+		return 5;  //hack
 		if (headings[headingKey]["resizable"]){
 			return this.getValue(headingKey, "currentWidth");
 		} else {

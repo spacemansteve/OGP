@@ -1,18 +1,23 @@
 <div id="about" class="dialog infoDialog">
 	<p>
-	GeoData@Tufts is developed and maintained by Tufts University Information Technology. 
-	Tufts is leading the development in collaboration with Harvard of this open source, federated web application to rapidly discover, preview, 
-	and retrieve geospatial data from multiple repositories. GeoData@Tufts combines an intuitive, map-based search interface along with traditional 
-	text-based metadata search tools for rapid data discovery and for use in teaching, learning, and research.
+	WorldWideGeoWeb.com is developed and maintained by Steve McDonald.  It originated as a Master's Thesis  
+	effort to make the web's spatial resouces more accessible.  This site supports search, preview and download of 
+	shape files without using web mapping protocols (such as WMS).  
+	Zipped shape files are discovered via web crawls.
+	They are previewed via client-side parsing and rendering of shp, shx and dbf files.  A brief technical description
+	of my thesis is available
+	<a target="_blank" href="http://opengeoportal.org/thesis-update/">here</a>.
 	</p>
 	<p>
-	GeoData@Tufts is part of <a href="http://www.opengeoportal.org">The Open Geoportal</a>. The Open Geoportal is a consortium comprised of contributions 
-	of several universities and organizations to help facilitate the discovery and acquisition of geospatial data across many organizations and platforms. 
-	Current partners include: Harvard, MIT, MassGIS, Princeton, Columbia, Stanford, UC Berkeley, UCLA, Yale, and UConn. Built on open source technology, 
-	The Open Geoportal provides organizations the opportunity to share thousands of geospatial data layers, maps, metadata, and development resources through 
-	a single common interface.
+	WorldWideGeoWeb.com is built on <a target="_blank" href="http://www.opengeoportal.org">OpenGeoPortal</a>.  
+	<a target="_blank" href="http://www.tufts.edu">Tufts University's</a> 
+	<a target="_blank" href="https://it.tufts.edu/rgts">Geospatial Technology Services</a> group leads the development of OpenGeoPortal. 
+	The <a target="_blank" href="http://geodata.tufts.edu">Tufts GeoData Portal</a> provides access to over ten thousand data layers
+	and consumes web services from several universities.
 	</p>
+
 	<p>
-    	<%@include file="mailto.jspf"%> 
+	Questions, comments and suggestions are most welcome at <a href="mailto:worldwidegeoweb@gmail.com">WorldWideGeoWeb@gmail.com</a>.  
+
 	</p>
 </div>

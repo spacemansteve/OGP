@@ -447,6 +447,8 @@ org.OpenGeoPortal.Downloader = function(){
 	var handleDownload = function(statusObj){
 		var url;
 		var currentRequestId;
+		foo = statusObj;
+		alert("in handleDownload");
 		if (statusObj.type == "layer"){
 			currentRequestId = statusObj.requestId;
 			that.layerRequestToComplete(statusObj);

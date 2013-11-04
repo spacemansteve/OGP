@@ -101,8 +101,11 @@ org.OpenGeoPortal.Solr.prototype.getServerName = function getServerName()
 	var configInfo = org.OpenGeoPortal.InstitutionInfo.getSearch().serviceAddress;
 	var elements = configInfo.split(",");
 	var primaryServer = elements[0];
-	if (!(primaryServer.indexOf("http://") == 0||primaryServer.indexOf("https://") == 0)){
-		primaryServer = "http://" + primaryServer;
+	if (!(primaryServer.indexOf("http://") == 0||primaryServer.indexOf("https://") == 0))
+	{
+	    // mostly for aws where ip address changes on every reboot
+	    // support for no domain name in solr specification, just use current host
+	    primaryServer = "http://" + window.location.hostname + primaryServer;
 	}
 	var select = "select";
 	if ((primaryServer.substring(primaryServer.length - select.length) == select) == false)
@@ -110,6 +113,7 @@ org.OpenGeoPortal.Solr.prototype.getServerName = function getServerName()
 	    // here if the server name does not end in select
 	    primaryServer = primaryServer + "select";
 	}
+	console.log("solr using " + primaryServer);
 	return primaryServer;
 };
 
@@ -162,7 +166,7 @@ org.OpenGeoPortal.Solr.prototype.getServerPort = function getServerPort()
 	return "executeQuery.jsp";
 };*/
 
-org.OpenGeoPortal.Solr.prototype.DataType = {Raster: "Raster", PaperMap: "Paper+Map", Point: "Point", Line: "Line", Polygon: "Polygon"};
+    org.OpenGeoPortal.Solr.prototype.DataType = {Raster: "Raster", PaperMap: "Paper+Map", Point: "Point", Line: "Line", Polygon: "Polygon", BoundingBox: "BoundingBox"};
 
 
 // set the data types to search for, vector is shorthand for point, line and polygon
@@ -1017,7 +1021,7 @@ org.OpenGeoPortal.Solr.prototype.getReturnedColumnsClause = function getReturned
 		returnedColumns = "fl=";
 	else if (requestType == org.OpenGeoPortal.Solr.prototype.SearchRequest)
 		returnedColumns = "fl=Name,CollectionId,Institution,Access,DataType,Availability,LayerDisplayName,Publisher,GeoReferenced" +
-						  ",Originator,Location,MinX,MaxX,MinY,MaxY,ContentDate,LayerId,score,WorkspaceName,SrsProjectionCode";
+						  ",Originator,Location,MinX,MaxX,MinY,MaxY,ContentDate,LayerId,score,WorkspaceName,SrsProjectionCode,ExternalLayerId,SizeInBytes";
 	else
 		returnedColumns = "error in org.OpenGeoPortal.Solr.prototype.getReturnedColumnsClause" +
 						  " did not understand passed requestType " + requestType;

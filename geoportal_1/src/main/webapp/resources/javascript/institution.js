@@ -107,9 +107,18 @@ org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo = function(){
 	return org.OpenGeoPortal.InstitutionInfo.Config;
 };
 
+
+// from http://stackoverflow.com/questions/1403888/get-url-parameter-with-jquery
+function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+};
+
 org.OpenGeoPortal.InstitutionInfo.requestInfo = function(){
+    var configFileName = getURLParameter("configFile");
+    if (configFileName == null)
+	configFileName = "ogpConfig.json";
 	var params = {
-		url: "resources/ogpConfig.json",
+	    url: "resources/" + configFileName, //ogpConfig.json",
 		async: false,
 		contentType: "text/json",
 		dataType: 'json',
@@ -123,7 +132,7 @@ org.OpenGeoPortal.InstitutionInfo.requestInfo = function(){
 			org.OpenGeoPortal.InstitutionInfo.homeInstitution = data["config"]["homeInstitution"];
 		},
 		error: function(jqXHR, textStatus, errorThrown){
-			alert(textStatus);
+			alert(textStatus + ", config file not found " + configFileName);
 			alert(errorThrown);
 			alert(jqXHR);
 		}

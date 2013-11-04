@@ -19,7 +19,7 @@ if (typeof org.OpenGeoPortal == 'undefined'){
 
 org.OpenGeoPortal.init = function(){
 	org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo();
-	document.title = "GeoData@" + org.OpenGeoPortal.InstitutionInfo.getHomeInstitution();
+	//document.title = "GeoData@" + org.OpenGeoPortal.InstitutionInfo.getHomeInstitution();
 
 	//we do this here so that we can try to get the css before the document is ready (should we do this in the jsp instead?)
 	var url = org.OpenGeoPortal.InstitutionInfo.getCustomCss();

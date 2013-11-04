@@ -35,7 +35,7 @@ org.OpenGeoPortal.UserInterface = function(){
 	this.config = org.OpenGeoPortal.InstitutionInfo;
 	this.jspfDir = org.OpenGeoPortal.Utility.JspfLocation;
 	this.login = new org.OpenGeoPortal.LogIn(this.config.getHomeInstitution());
-	this.login.checkLoginStatus();
+	//this.login.checkLoginStatus();
 	analytics = new org.OpenGeoPortal.Analytics();
 	var that = this;
 
@@ -1083,7 +1083,7 @@ org.OpenGeoPortal.UserInterface.prototype.isVector = function(dataType){
 org.OpenGeoPortal.UserInterface.prototype.downloadDialog = function(){
 	//first, check to see if anything is in savedLayers & checked
 	var layerList = this.getLayerList("download");
-
+	foo = layerList;
 	var dialogContent = "";
 	var counter = 0;
 	for (var i in layerList){
@@ -2169,6 +2169,8 @@ org.OpenGeoPortal.UserInterface.prototype.toggleFeatureInfo = function(thisObj, 
 
 //get the color from the layer state object to use for the shown swatch
 org.OpenGeoPortal.UserInterface.prototype.setPaletteColor = function(layerID){
+    try  //spmcd
+    {
 	  var paletteColor = this.layerStateObject.getState(layerID, "color");
 	  var escapedLayerID = this.utility.idEscape(layerID);
 	  jQuery(".colorPalette").each(function(){
@@ -2178,6 +2180,11 @@ org.OpenGeoPortal.UserInterface.prototype.setPaletteColor = function(layerID){
 			  jQuery(this).css("background-color", paletteColor);
 		  }
 	  });
+    }
+    catch (err)
+    {
+	console.log("error in setPaletteColor");
+    }
 };
 
 //create the color picker dialog box
